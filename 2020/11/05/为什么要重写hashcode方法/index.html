@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="hashcode方法Object中的hashcode是一个本地方法 其方法说明原文如下：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="为什么要重写hashcode方法">
+<meta property="og:url" content="http://example.com/2020/11/05/%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E9%87%8D%E5%86%99hashcode%E6%96%B9%E6%B3%95/index.html">
+<meta property="og:site_name" content="muhua的个人博客">
+<meta property="og:description" content="hashcode方法Object中的hashcode是一个本地方法 其方法说明原文如下：">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-11-04T20:15:50.000Z">
+<meta property="article:modified_time" content="2020-11-04T12:34:22.153Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="java基础">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2020/11/05/%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E9%87%8D%E5%86%99hashcode%E6%96%B9%E6%B3%95/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>为什么要重写hashcode方法 | muhua的个人博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="muhua的个人博客" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">muhua的个人博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/schedule/" rel="section"><i class="fa fa-fw fa-calendar"></i>日程表</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/11/05/%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E9%87%8D%E5%86%99hashcode%E6%96%B9%E6%B3%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="John Doe">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="muhua的个人博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          为什么要重写hashcode方法
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-11-04 20:15:50 / 修改时间：12:34:22" itemprop="dateCreated datePublished" datetime="2020-11-04T20:15:50Z">2020-11-04</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="hashcode方法"><a href="#hashcode方法" class="headerlink" title="hashcode方法"></a>hashcode方法</h3><p>Object中的hashcode是一个本地方法</p>
+<h4 id="其方法说明原文如下："><a href="#其方法说明原文如下：" class="headerlink" title="其方法说明原文如下："></a>其方法说明原文如下：</h4><a id="more"></a>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Returns a hash code value for the object. This method is</span></span><br><span class="line"><span class="comment">     * supported for the benefit of hash tables such as those provided by</span></span><br><span class="line"><span class="comment">     * &#123;<span class="doctag">@link</span> java.util.HashMap&#125;.</span></span><br><span class="line"><span class="comment">     * &lt;p&gt;</span></span><br><span class="line"><span class="comment">     * The general contract of &#123;<span class="doctag">@code</span> hashCode&#125; is:</span></span><br><span class="line"><span class="comment">     * &lt;ul&gt;</span></span><br><span class="line"><span class="comment">     * &lt;li&gt;Whenever it is invoked on the same object more than once during</span></span><br><span class="line"><span class="comment">     *     an execution of a Java application, the &#123;<span class="doctag">@code</span> hashCode&#125; method</span></span><br><span class="line"><span class="comment">     *     must consistently return the same integer, provided no information</span></span><br><span class="line"><span class="comment">     *     used in &#123;<span class="doctag">@code</span> equals&#125; comparisons on the object is modified.</span></span><br><span class="line"><span class="comment">     *     This integer need not remain consistent from one execution of an</span></span><br><span class="line"><span class="comment">     *     application to another execution of the same application.</span></span><br><span class="line"><span class="comment">     * &lt;li&gt;If two objects are equal according to the &#123;<span class="doctag">@code</span> equals(Object)&#125;</span></span><br><span class="line"><span class="comment">     *     method, then calling the &#123;<span class="doctag">@code</span> hashCode&#125; method on each of</span></span><br><span class="line"><span class="comment">     *     the two objects must produce the same integer result.</span></span><br><span class="line"><span class="comment">     * &lt;li&gt;It is &lt;em&gt;not&lt;/em&gt; required that if two objects are unequal</span></span><br><span class="line"><span class="comment">     *     according to the &#123;<span class="doctag">@link</span> java.lang.Object#equals(java.lang.Object)&#125;</span></span><br><span class="line"><span class="comment">     *     method, then calling the &#123;<span class="doctag">@code</span> hashCode&#125; method on each of the</span></span><br><span class="line"><span class="comment">     *     two objects must produce distinct integer results.  However, the</span></span><br><span class="line"><span class="comment">     *     programmer should be aware that producing distinct integer results</span></span><br><span class="line"><span class="comment">     *     for unequal objects may improve the performance of hash tables.</span></span><br><span class="line"><span class="comment">     * &lt;/ul&gt;</span></span><br><span class="line"><span class="comment">     * &lt;p&gt;</span></span><br><span class="line"><span class="comment">     * As much as is reasonably practical, the hashCode method defined</span></span><br><span class="line"><span class="comment">     * by class &#123;<span class="doctag">@code</span> Object&#125; does return distinct integers for</span></span><br><span class="line"><span class="comment">     * distinct objects. (The hashCode may or may not be implemented</span></span><br><span class="line"><span class="comment">     * as some function of an object&#x27;s memory address at some point</span></span><br><span class="line"><span class="comment">     * in time.)</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span>  a hash code value for this object.</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@see</span>     java.lang.Object#equals(java.lang.Object)</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@see</span>     java.lang.System#identityHashCode</span></span><br><span class="line"><span class="comment">     */</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="汉语翻译"><a href="#汉语翻译" class="headerlink" title="汉语翻译"></a>汉语翻译</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 返回该对象的哈希值。支持此方法是为了使hashMap提供的哈希表受益。</span></span><br><span class="line"><span class="comment">     * 该方法的总协定是:</span></span><br><span class="line"><span class="comment">     * 1、每当在Java应用程序的执行期间对同一对象多次调用时，hashCode方法必须始终返回相同的整数，前提是没有修改对象上equals方法比较中使用的信</span></span><br><span class="line"><span class="comment">     * 息。从应用程序的一次执行到同一应用程序的另一次执行，此整数不必保持一致。</span></span><br><span class="line"><span class="comment">     * 2、如果两个对象根据equals方法是相等的，那么对这两个对象中的每一个调用hashCode方法必须产生相同的整数结果。    </span></span><br><span class="line"><span class="comment">     * 3、如果两个对象根据equals方法是不相等的，那么在这两个对象上调用hashCode方法不必产生不同的整数结果。然而，程序员应该知道，</span></span><br><span class="line"><span class="comment">     * 为不相等的对象生成不同的整数结果可以提高hash tables的性能</span></span><br><span class="line"><span class="comment">     * </span></span><br><span class="line"><span class="comment">     * 在合理可行的情况下，类Object定义的hashCode方法确实为不同的对象返回不同的整数。（在某个时间点，哈希码可以实现为对象内存      </span></span><br><span class="line"><span class="comment">     * 地址的某个函数，也可以不实现）</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span>  a hash code value for this object.</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@see</span>     java.lang.Object#equals(java.lang.Object)</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@see</span>     java.lang.System#identityHashCode</span></span><br><span class="line"><span class="comment">     */</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="equal方法"><a href="#equal方法" class="headerlink" title="equal方法"></a>equal方法</h3><h4 id="其方法说明原文如下：-1"><a href="#其方法说明原文如下：-1" class="headerlink" title="其方法说明原文如下："></a>其方法说明原文如下：</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Indicates whether some other object is &quot;equal to&quot; this one.</span></span><br><span class="line"><span class="comment">     * &lt;p&gt;</span></span><br><span class="line"><span class="comment">     * The &#123;<span class="doctag">@code</span> equals&#125; method implements an equivalence relation</span></span><br><span class="line"><span class="comment">     * on non-null object references:</span></span><br><span class="line"><span class="comment">     * &lt;ul&gt;</span></span><br><span class="line"><span class="comment">     * &lt;li&gt;It is &lt;i&gt;reflexive&lt;/i&gt;: for any non-null reference value</span></span><br><span class="line"><span class="comment">     *     &#123;<span class="doctag">@code</span> x&#125;, &#123;<span class="doctag">@code</span> x.equals(x)&#125; should return</span></span><br><span class="line"><span class="comment">     *     &#123;<span class="doctag">@code</span> true&#125;.</span></span><br><span class="line"><span class="comment">     * &lt;li&gt;It is &lt;i&gt;symmetric&lt;/i&gt;: for any non-null reference values</span></span><br><span class="line"><span class="comment">     *     &#123;<span class="doctag">@code</span> x&#125; and &#123;<span class="doctag">@code</span> y&#125;, &#123;<span class="doctag">@code</span> x.equals(y)&#125;</span></span><br><span class="line"><span class="comment">     *     should return &#123;<span class="doctag">@code</span> true&#125; if and only if</span></span><br><span class="line"><span class="comment">     *     &#123;<span class="doctag">@code</span> y.equals(x)&#125; returns &#123;<span class="doctag">@code</span> true&#125;.</span></span><br><span class="line"><span class="comment">     * &lt;li&gt;It is &lt;i&gt;transitive&lt;/i&gt;: for any non-null reference values</span></span><br><span class="line"><span class="comment">     *     &#123;<span class="doctag">@code</span> x&#125;, &#123;<span class="doctag">@code</span> y&#125;, and &#123;<span class="doctag">@code</span> z&#125;, if</span></span><br><span class="line"><span class="comment">     *     &#123;<span class="doctag">@code</span> x.equals(y)&#125; returns &#123;<span class="doctag">@code</span> true&#125; and</span></span><br><span class="line"><span class="comment">     *     &#123;<span class="doctag">@code</span> y.equals(z)&#125; returns &#123;<span class="doctag">@code</span> true&#125;, then</span></span><br><span class="line"><span class="comment">     *     &#123;<span class="doctag">@code</span> x.equals(z)&#125; should return &#123;<span class="doctag">@code</span> true&#125;.</span></span><br><span class="line"><span class="comment">     * &lt;li&gt;It is &lt;i&gt;consistent&lt;/i&gt;: for any non-null reference values</span></span><br><span class="line"><span class="comment">     *     &#123;<span class="doctag">@code</span> x&#125; and &#123;<span class="doctag">@code</span> y&#125;, multiple invocations of</span></span><br><span class="line"><span class="comment">     *     &#123;<span class="doctag">@code</span> x.equals(y)&#125; consistently return &#123;<span class="doctag">@code</span> true&#125;</span></span><br><span class="line"><span class="comment">     *     or consistently return &#123;<span class="doctag">@code</span> false&#125;, provided no</span></span><br><span class="line"><span class="comment">     *     information used in &#123;<span class="doctag">@code</span> equals&#125; comparisons on the</span></span><br><span class="line"><span class="comment">     *     objects is modified.</span></span><br><span class="line"><span class="comment">     * &lt;li&gt;For any non-null reference value &#123;<span class="doctag">@code</span> x&#125;,</span></span><br><span class="line"><span class="comment">     *     &#123;<span class="doctag">@code</span> x.equals(null)&#125; should return &#123;<span class="doctag">@code</span> false&#125;.</span></span><br><span class="line"><span class="comment">     * &lt;/ul&gt;</span></span><br><span class="line"><span class="comment">     * &lt;p&gt;</span></span><br><span class="line"><span class="comment">     * The &#123;<span class="doctag">@code</span> equals&#125; method for class &#123;<span class="doctag">@code</span> Object&#125; implements</span></span><br><span class="line"><span class="comment">     * the most discriminating possible equivalence relation on objects;</span></span><br><span class="line"><span class="comment">     * that is, for any non-null reference values &#123;<span class="doctag">@code</span> x&#125; and</span></span><br><span class="line"><span class="comment">     * &#123;<span class="doctag">@code</span> y&#125;, this method returns &#123;<span class="doctag">@code</span> true&#125; if and only</span></span><br><span class="line"><span class="comment">     * if &#123;<span class="doctag">@code</span> x&#125; and &#123;<span class="doctag">@code</span> y&#125; refer to the same object</span></span><br><span class="line"><span class="comment">     * (&#123;<span class="doctag">@code</span> x == y&#125; has the value &#123;<span class="doctag">@code</span> true&#125;).</span></span><br><span class="line"><span class="comment">     * &lt;p&gt;</span></span><br><span class="line"><span class="comment">     * Note that it is generally necessary to override the &#123;<span class="doctag">@code</span> hashCode&#125;</span></span><br><span class="line"><span class="comment">     * method whenever this method is overridden, so as to maintain the</span></span><br><span class="line"><span class="comment">     * general contract for the &#123;<span class="doctag">@code</span> hashCode&#125; method, which states</span></span><br><span class="line"><span class="comment">     * that equal objects must have equal hash codes.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span>   obj   the reference object with which to compare.</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span>  &#123;<span class="doctag">@code</span> true&#125; if this object is the same as the obj</span></span><br><span class="line"><span class="comment">     *          argument; &#123;<span class="doctag">@code</span> false&#125; otherwise.</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@see</span>     #hashCode()</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@see</span>     java.util.HashMap</span></span><br><span class="line"><span class="comment">     */</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="汉语翻译-1"><a href="#汉语翻译-1" class="headerlink" title="汉语翻译"></a>汉语翻译</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 指示某个其他对象是否“等于”此对象.</span></span><br><span class="line"><span class="comment">     * equals方法在非空对象引用上实现等价关系：</span></span><br><span class="line"><span class="comment">     * &lt;ul&gt;</span></span><br><span class="line"><span class="comment">     * 1、它是自反的：对于任何非空的引用值x，x.equals（x）应该返回true</span></span><br><span class="line"><span class="comment">     * 2、它是对称的：对于任何非空的引用值x和y，x.equals（y）应该返回true，当且仅当 y.equals（x）返回true</span></span><br><span class="line"><span class="comment">     * 3、它是可传递的：对于任何非空的引用值 x、 y和 z，如果 x.equals（y）返回 true和 y.equals（z）返回 true，那么            * x.equals（z）应该返回 true</span></span><br><span class="line"><span class="comment">     * 4、它是一致的：对于任何非空的引用值x和y，多次调用x.equals（y）一致返回true或一致返回false，前提是对象的equals比较中      * 没有使用被修改的信息</span></span><br><span class="line"><span class="comment">     * 5、对于任何非空的引用值x，x.equals(null) 应该返回null</span></span><br><span class="line"><span class="comment">     *      </span></span><br><span class="line"><span class="comment">     * 请注意，每当重写hashCode方法时，通常都需要重写hashCode方法，以便维护hashCode方法的一般约定，即相同的对象必须具有相同      * 的哈希代码。</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span>   obj   the reference object with which to compare.</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span>   true if this object is the same as the obj</span></span><br><span class="line"><span class="comment">     *          argument;  false otherwise.</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@see</span>     #hashCode()</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@see</span>     java.util.HashMap</span></span><br><span class="line"><span class="comment">     */</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h3><p>由上面hashcode与equal方法的说明可以知道：</p>
+<p>1、equal判断相等时，hashcode返回的值不一定不相等。也就是所hashcode相等时，无法得知equal是否相等</p>
+<p>2、equal判断相等时，hashcode返回值一定相等</p>
+<p>由于当一个对象中有大量成员信息时，用equal比较效率会比较低。</p>
+<p>故，在判断两对象是否相等时，可以先进行hashcode的判断，如果不相等，则一定不相等，若hashcode值相等，在通过equal方法判断。</p>
+<h3 id="扩展：关于HashSet"><a href="#扩展：关于HashSet" class="headerlink" title="扩展：关于HashSet"></a>扩展：关于HashSet</h3><p>HashSet集合特点：无序，元素唯一。</p>
+<p>在HashSet集合中，通过hashcode和equal方法，保证元素的唯一性。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/java%E5%9F%BA%E7%A1%80/" rel="tag"># java基础</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/10/07/%E7%AC%AC%E4%B8%80%E7%AF%87%E6%96%87%E7%AB%A0-%E7%94%A8%E4%BA%8E%E6%B5%8B%E8%AF%95/" rel="prev" title="第一篇文章-用于测试">
+      <i class="fa fa-chevron-left"></i> 第一篇文章-用于测试
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/11/05/java%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%BC%96%E7%A0%81%E8%BD%AC%E6%8D%A2/" rel="next" title="java字符串编码转换">
+      java字符串编码转换 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#hashcode%E6%96%B9%E6%B3%95"><span class="nav-number">1.</span> <span class="nav-text">hashcode方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%85%B6%E6%96%B9%E6%B3%95%E8%AF%B4%E6%98%8E%E5%8E%9F%E6%96%87%E5%A6%82%E4%B8%8B%EF%BC%9A"><span class="nav-number">1.1.</span> <span class="nav-text">其方法说明原文如下：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B1%89%E8%AF%AD%E7%BF%BB%E8%AF%91"><span class="nav-number">1.2.</span> <span class="nav-text">汉语翻译</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#equal%E6%96%B9%E6%B3%95"><span class="nav-number">2.</span> <span class="nav-text">equal方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%85%B6%E6%96%B9%E6%B3%95%E8%AF%B4%E6%98%8E%E5%8E%9F%E6%96%87%E5%A6%82%E4%B8%8B%EF%BC%9A-1"><span class="nav-number">2.1.</span> <span class="nav-text">其方法说明原文如下：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B1%89%E8%AF%AD%E7%BF%BB%E8%AF%91-1"><span class="nav-number">2.2.</span> <span class="nav-text">汉语翻译</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E8%AE%BA"><span class="nav-number">3.</span> <span class="nav-text">结论</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%A9%E5%B1%95%EF%BC%9A%E5%85%B3%E4%BA%8EHashSet"><span class="nav-number">4.</span> <span class="nav-text">扩展：关于HashSet</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="John Doe"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">John Doe</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">5</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">John Doe</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
